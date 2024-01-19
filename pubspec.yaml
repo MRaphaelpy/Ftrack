@@ -1,0 +1,34 @@
+name: frastreio2
+description: "A new Flutter project."
+
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.2.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.2
+  dio: ^5.4.0
+  lottie: ^2.7.0
+  provider: ^6.1.1
+  validatorless: ^1.2.3
+  material3_layout: ^0.0.7
+  flex_color_scheme: ^7.3.1
+  http: ^1.1.2
+  sqflite: ^2.3.0
+  shared_preferences: ^2.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^2.0.0
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
