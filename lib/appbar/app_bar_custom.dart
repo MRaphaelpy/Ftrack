@@ -25,10 +25,7 @@ class _AppBarCustomState extends State<AppBarCustom>
     _controller = AnimationController(vsync: this);
     _controller.duration = const Duration(milliseconds: 500);
 
-    // Inicializa o valor de isPlaying com base no modo de tema atual
     isPlaying = Provider.of<ThemeProvider>(context, listen: false).isDarkMode;
-
-    // Adiciona o observer para ser notificado sobre eventos do ciclo de vida do aplicativo
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -43,7 +40,6 @@ class _AppBarCustomState extends State<AppBarCustom>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused) {
-      // O aplicativo está prestes a ser pausado, salva o estado do tema e animação
       _saveAppState();
     }
   }
@@ -56,7 +52,6 @@ class _AppBarCustomState extends State<AppBarCustom>
     print('App state saved: Theme=${themeProvider.isDarkMode}, Animation=$isPlaying');
   }
 
-
   void toggle() {
     const Duration newDuration = Duration(milliseconds: 500);
 
@@ -67,8 +62,6 @@ class _AppBarCustomState extends State<AppBarCustom>
       _controller.reverse();
     }
     isPlaying = !isPlaying;
-
-    // Salva o estado da animação no SharedPreferences
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     DB.instance.setThemeMode(themeProvider.isDarkMode);
     DB.instance.setAnimationState(isPlaying);

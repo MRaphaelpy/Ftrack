@@ -1,3 +1,4 @@
+import 'package:frastreio2/widgets/custom_erro_alert_dialog.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -140,9 +141,10 @@ class DB {
         {'is_playing': isPlaying ? 1 : 0},
       );
     } catch (e) {
-      print('Error saving animation state: $e');
+      CustomErrorAlertDialog(
+        errorMessage: "Erro ao salvar animação ${e.toString()}.",
+      );
     }
 
-    print('Animation state saved: $isPlaying');
   }
 }

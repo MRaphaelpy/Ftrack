@@ -3,14 +3,12 @@ class Evento {
   String hora;
   String local;
   String status;
-  List<String> subStatus;
 
   Evento({
     required this.data,
     required this.hora,
     required this.local,
     required this.status,
-    required this.subStatus,
   });
 
   factory Evento.fromJson(Map<String, dynamic> json) {
@@ -19,7 +17,6 @@ class Evento {
       hora: json['hora'],
       local: json['local'],
       status: json['status'],
-      subStatus: List<String>.from(json['subStatus']),
     );
   }
 }
@@ -41,7 +38,8 @@ class Pacote {
 
   factory Pacote.fromJson(Map<String, dynamic> json) {
     List<Evento> eventosList = List<Evento>.from(
-        json['eventos'].map((evento) => Evento.fromJson(evento)));
+      json['eventos'].map((evento) => Evento.fromJson(evento)),
+    );
 
     return Pacote(
       codigo: json['codigo'],

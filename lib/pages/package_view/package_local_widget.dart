@@ -34,20 +34,29 @@ class _PackageLocalWidgetState extends State<PackageLocalWidget>
   Widget build(BuildContext context) {
     return Container(
       height: 200,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Lottie.asset(
-              "assets/images/packagewidget.json",
-              height: 150,
-            ),
-            SizedBox(height: 10),
-            Text(
-              'Seu pacote está em: ${widget.local}',
-              style: TextStyle(fontSize: 20),
-            ),
-          ],
+      child: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Lottie.asset(
+                "assets/images/packagewidget.json",
+                height: 100,
+              ),
+              SizedBox(height: 10),
+              Container(
+                constraints: BoxConstraints(
+                  maxWidth: 300,
+                ),
+                child: Text(
+                  'Seu pacote está em: ${widget.local}',
+                  style: TextStyle(fontSize: 15),
+                  softWrap: true,
+                ),
+              ),
+
+            ],
+          ),
         ),
       ),
     );

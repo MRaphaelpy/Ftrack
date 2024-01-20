@@ -11,7 +11,7 @@ class PackageEventCard extends StatelessWidget {
     return ConstrainedBox(
       constraints: const BoxConstraints(
         maxWidth: 400,
-        maxHeight: 200, 
+        maxHeight: 200,
       ),
       child: Card(
         elevation: 3,
@@ -30,11 +30,15 @@ class PackageEventCard extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Data: ${evento.data} Hora: ${evento.hora} Local: ${evento.local}',
+                'Data: ${evento.data}',
               ),
               const SizedBox(height: 8),
               Text(
-                'SubStatus: ${evento.subStatus.join(', ')}',
+                'Hora: ${evento.hora}',
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Local: ${evento.local}',
               ),
             ],
           ),

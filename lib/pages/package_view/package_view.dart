@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:frastreio2/pages/package_view/event_list.dart';
 import 'package:frastreio2/pages/package_view/package_local_widget.dart';
+import 'package:frastreio2/widgets/custom_erro_alert_dialog.dart';
 import 'package:lottie/lottie.dart';
+import '../../database/package_json_database_operation.dart';
+import '../../database/package_json_db.dart';
 import '../../models/objeto_rastreio.dart';
 import '../../service/interface_http.dart';
 import '../../service/service_rastreio.dart';
@@ -16,14 +19,16 @@ class PackageView extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  // ignore: library_private_types_in_public_api
   _PackageViewState createState() => _PackageViewState();
 }
 
 class _PackageViewState extends State<PackageView> {
   late PackageState _packageState;
-  final RastreioService rastreioService =
-      RastreioService(httpClient: HttpService());
+  final RastreioService rastreioService = RastreioService(httpClient: HttpService());
+  final DatabaseHelperJson databaseHelper = DatabaseHelperJson.instance;
+
+  int _reloadButtonTapCount = 0;
+  DateTime? _lastReloadTime;
 
   @override
   void initState() {
@@ -34,13 +39,41 @@ class _PackageViewState extends State<PackageView> {
         setState(() {});
       },
     );
+    _loadPackageDataFromDatabase(widget.codigo);
+  }
 
-    _getTestPackageData().then((testPackage) {
-      if (testPackage != null) {
-        _packageState.pacote = testPackage;
+  Future<void> _loadPackageDataFromDatabase(String codigo) async {
+    try {
+      List<Pacote> pacotes = await databaseHelper.getPacotes();
+
+      if (pacotes.isNotEmpty) {
+
+        _packageState.pacote = pacotes.first;
         setState(() {});
+      } else {
+        await _fetchAndSaveRastreioData(codigo);
       }
-    });
+    } catch (e) {
+      CustomErrorAlertDialog(
+        errorMessage: 'Erro ao carregar dados do banco de dados: $e',
+      );
+
+    }
+  }
+
+  Future<void> _fetchAndSaveRastreioData(String codigo) async {
+    DatabaseOperations databaseOperations = DatabaseOperations(
+      rastreioService: rastreioService,
+      databaseHelper: databaseHelper,
+    );
+
+    try {
+      await databaseOperations.fetchAndSaveRastreio(codigo);
+    } catch (e) {
+      CustomErrorAlertDialog(
+        errorMessage: 'Erro ao buscar ou salvar rastreio: $e',
+      );
+    }
   }
 
   @override
@@ -48,6 +81,14 @@ class _PackageViewState extends State<PackageView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Detalhes do Pacote'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: () {
+              _handleReloadButtonTap();
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -102,12 +143,10 @@ class _PackageViewState extends State<PackageView> {
                     ),
                     child: PackageLocalWidget(local: primeiroEvento?.local ?? ''),
                   ),
-                )
-                ;
+                );
               }
             },
           ),
-
 
           Expanded(
             child: FutureBuilder(
@@ -123,6 +162,7 @@ class _PackageViewState extends State<PackageView> {
                   );
                 } else if (_packageState.pacote == null ||
                     _packageState.pacote?.eventos.isEmpty == true) {
+
                   return Center(
                     child: Column(
                       children: [
@@ -146,75 +186,35 @@ class _PackageViewState extends State<PackageView> {
               },
             ),
           ),
-
-
         ],
       ),
     );
   }
 
+  void _handleReloadButtonTap() {
+    final DateTime now = DateTime.now();
 
-  Future<Pacote?> _getTestPackageData() async {
-    return Pacote.fromJson({
-      "codigo": "LX002249507BR",
-      "servico": "PAC - Encomenda Econômica",
-      "host": "dw",
-      "quantidade": 12,
-      "eventos": [
-        {
-          "data": "24/10/2019",
-          "hora": "10:40",
-          "local": "CURITIBA/PR",
-          "status": "Devolução autorizada pela Receita Federeul",
-          "subStatus": ["Registrado por CENTRO INTERNACIONAL PR - CURITIBA/PR"]
-        },
-        {
-          "data": "11/09/2019",
-          "hora": "00:00",
-          "local": "CURITIBA/PR",
-          "status": "Pagamento não efetuado no prazo",
-          "subStatus": ["Objeto em análise de destinação"]
-        },
-        {
-          "data": "11/09/2019",
-          "hora": "00:00",
-          "local": "CURITIBA/PR",
-          "status": "Pagamento não efetuado no prazo",
-          "subStatus": ["Objeto em análise de destinação"]
-        },
-        {
-          "data": "11/09/2019",
-          "hora": "00:00",
-          "local": "CURITIBA/PR",
-          "status": "Pagamento não efetuado no prazo",
-          "subStatus": ["Objeto em análise de destinação"]
-        },{
-          "data": "11/09/2019",
-          "hora": "00:00",
-          "local": "CURITIBA/PR",
-          "status": "Pagamento não efetuado no prazo",
-          "subStatus": ["Objeto em análise de destinação"]
-        },{
-          "data": "11/09/2019",
-          "hora": "00:00",
-          "local": "CURITIBA/PR",
-          "status": "Pagamento não efetuado no prazo",
-          "subStatus": ["Objeto em análise de destinação"]
-        },{
-          "data": "11/09/2019",
-          "hora": "00:00",
-          "local": "CURITIBA/PR",
-          "status": "Pagamento não efetuado no prazo",
-          "subStatus": ["Objeto em análise de destinação"]
-        },{
-          "data": "11/09/2019",
-          "hora": "00:00",
-          "local": "CURITIBA/PR",
-          "status": "Pagamento não efetuado no prazo",
-          "subStatus": ["Objeto em análise de destinação"]
-        },
-        // Adicione mais eventos conforme necessário
-      ],
-    });
+
+    if (_lastReloadTime == null ||
+        now.difference(_lastReloadTime!) >= Duration(minutes: 2)) {
+
+      _reloadButtonTapCount = 0;
+    }
+
+
+    _reloadButtonTapCount++;
+
+    if (_reloadButtonTapCount <= 2) {
+
+      _lastReloadTime = now;
+      _fetchAndSaveRastreioData(widget.codigo);
+    } else {
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Limite de recarga atingido. Aguarde 2 minutos.'),
+        ),
+      );
+    }
   }
 }
